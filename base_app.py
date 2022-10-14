@@ -31,7 +31,7 @@ import string
 import nltk
 from nltk.stem import WordNetLemmatizer
 import numpy as np
-from tensorflow.keras.models import load_model
+
 
 # functions to clean the data
 
@@ -113,7 +113,7 @@ def main():
 
     # Creating sidebar with selection box -
     # you can create multiple pages this way
-    options = ["Prediction", "Information"]
+    options = ['Prediction MLP', "Prediction NNC", "Information"]
     selection = st.sidebar.selectbox("Choose Option", options)
 
     # Building out the "Information" page
@@ -131,7 +131,36 @@ def main():
             st.write(raw[['sentiment', 'message']])  # will write the df to the page
 
     # Building out the predication page
-    if selection == "Prediction":
+    if selection == "Prediction MLP":
+        st.info("Prediction with ML Models")
+        # Creating a text box for user input
+        tweet_text = st.text_area("Enter Text Or Sentence", "Type Here")
+
+        if st.button("Classify"):
+            # remove urls function
+            tweet_text_url = remove_urls_lower(tweet_text)
+            # remove punctuation and special char
+            tweet_text_pun = remove_punctuation(tweet_text_url)
+            # lemmatize the words
+            tweet_text_new = lemma_df(tweet_text_pun, lemma)
+            # vectorise data
+            vect_text = tweet_cv.transform([tweet_text_new]).toarray()
+            # add features names for variance threshold selection
+            vectorising_fnames_added = add_feature_names(vect_text)
+            # implement threshold on data
+            vect_thres = tweet_thres.transform(vectorising_fnames_added)
+
+            # Pickle model used due to storage restrictions on Tenser Flow model
+            # Try loading in multiple models to give the user a choice
+            predictor_mlp = joblib.load(open(os.path.join("resources/MLP_model.pkl"),"rb"))
+            prediction = predictor_mlp.predict(vect_thres)
+            # When model has successfully run, will print prediction
+            # You can use a dictionary or similar structure to make this output
+            # more human interpretable.
+            st.success("Text Categorized as: {}".format(prediction))
+
+    if selection == "Prediction NNC":
+        from tensorflow.keras.models import load_model
         st.info("Prediction with ML Models")
         # Creating a text box for user input
         tweet_text = st.text_area("Enter Text Or Sentence", "Type Here")
@@ -152,11 +181,11 @@ def main():
 
             # I have used my tensor model
             # Try loading in multiple models to give the user a choice
-            predictor = load_model("resources/model.h5")
+            predictor_tensor_flow = load_model("resources/model.h5")
             # reshape data to fit to mode;
             data_reshaped = np.array(vect_thres).reshape(-1, vect_thres.shape[1])
             # fit model
-            prediction = predictor.predict(data_reshaped)[0]
+            prediction = predictor_tensor_flow.predict(data_reshaped)[0]
             # change class probabilities to list
             y_pred_df = prediction.tolist()
             # find index location of max probability class and return class number
