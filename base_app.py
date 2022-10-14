@@ -108,7 +108,7 @@ def main():
     # Creates a main title and subheader on your page -
     # these are static across all pages
     global tweet_text_lemma
-    st.title("Tweet Neural Network Classifer")
+    st.title("Tweet ML Classifer")
     st.subheader("Climate change tweet classification")
 
     # Creating sidebar with selection box -
