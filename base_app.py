@@ -31,7 +31,7 @@ import string
 import nltk
 from nltk.stem import WordNetLemmatizer
 import numpy as np
-
+nltk.download('wordnet')
 
 # functions to clean the data
 
